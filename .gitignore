@@ -1,0 +1,130 @@
+# MISFlow AI
+
+MISFlow AI is a browser-based MIS reporting MVP designed for static deployment on Vercel. It allows teams to upload Excel or CSV reports, map business columns, calculate simplified EBITDA estimates, and export the location-wise summary without sending files to a server.
+
+## What is included
+
+- Drag-and-drop upload for CSV, XLS, and XLSX files
+- Multi-file processing in the browser only
+- Auto-suggested column mapping for `Location / Branch`, `Revenue`, and `Expense`
+- KPI summary cards for total revenue, expense, EBITDA, and location count
+- Location-wise business report with totals and search/filter controls
+- Export to CSV with final totals and formula-safe sanitization
+- Demo mode with realistic sample data
+- Responsive SaaS dashboard built with vanilla HTML, CSS, and JavaScript
+
+## Project structure
+
+/
+├── index.html
+├── styles.css
+├── app.js
+├── README.md
+├── .gitignore
+
+## Local development
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/Subi003/OpsPilot-AI.git
+   cd OpsPilot-AI
+   ```
+2. Open `index.html` directly in a browser, or serve the folder with a simple static server:
+   ```bash
+   python3 -m http.server 8000
+   ```
+3. Visit http://localhost:8000 in your browser.
+
+## GitHub upload instructions
+
+1. Create a repository in GitHub.
+2. Push the project to the repository:
+   ```bash
+   git init
+   git add .
+   git commit -m "Initial MISFlow AI MVP"
+   git branch -M main
+   git remote add origin https://github.com/<your-username>/<your-repo>.git
+   git push -u origin main
+   ```
+3. Confirm the repository contains `index.html`, `styles.css`, and `app.js`.
+
+## Vercel deployment instructions
+
+1. Sign in to Vercel.
+2. Click "Add New Project".
+3. Import the GitHub repository.
+4. Use the following settings:
+   - Framework Preset: Other / Static Site
+   - Build Command: leave blank
+   - Output Directory: `.`
+5. Click "Deploy".
+6. Vercel will deploy the static site directly from the repository.
+
+## Privacy and security
+
+- Uploaded files are processed in the current browser session.
+- No file uploads are sent to a backend or API.
+- No authentication or user accounts are created.
+- No database or localStorage persistence is used by default.
+- Spreadsheet formula characters such as `=`, `+`, `-`, and `@` are sanitized before CSV export to reduce formula injection risk.
+
+## Browser-side dependencies
+
+This project loads the SheetJS library from the jsDelivr CDN in the browser for CSV/XLS/XLSX parsing. The app operates entirely client-side and does not use external API services for document processing.
+
+## Demo workflow
+
+- Click "Load Sample Data".
+- Review the auto-mapped columns.
+- Select the correct location, revenue, and expense fields if needed.
+- Review KPI cards and the location-wise report.
+- Export the report as a CSV file.
+
+## Financial calculation note
+
+This application uses a simplified EBITDA estimate based on the selected revenue and expense columns. It is intended for operational business analysis and must not be treated as audited or GAAP-compliant EBITDA without validated accounting inputs.
+
+## Troubleshooting
+
+### File import fails
+
+- Confirm the file extension is `.csv`, `.xls`, or `.xlsx`.
+- Keep files under 10 MB.
+- Check that the workbook has at least one header row and data rows.
+
+### Mapping is missing
+
+- Ensure the uploaded sheet contains recognizable headers such as `Location`, `Branch`, `Revenue`, `Expense`, or similar.
+- Manually choose the correct mapping columns from the mapping form.
+
+### No report appears
+
+- Verify that the location, revenue, and expense columns are correctly mapped.
+- Ensure financial cells contain valid numeric values.
+- Blank locations are labeled as `Unassigned`, and invalid numeric rows are skipped with a warning.
+
+### Vercel deployment problems
+
+- Confirm the project is a static site with no build step.
+- Keep the repository root as the deployment root.
+- Check that the project includes `index.html` and the static assets at the top level.
+
+## Validation checklist
+
+The MVP should be checked for:
+
+- Sample data generates a valid report
+- CSV and XLSX files import correctly
+- Multiple files can be processed together
+- Missing or mismatched columns are handled gracefully
+- Negative values and invalid numeric values are reported clearly
+- Total EBITDA matches total revenue minus total expense
+- CSV export includes totals and a safe filename
+- Responsive layout works for desktop, tablet, and mobile screens
+
+## Limitations
+
+- This is a static, browser-only MVP and does not include persistent storage or user accounts.
+- It does not process formulas or macro code embedded in uploaded files.
+- Financial calculations are simplified and should be reviewed by a finance or accounting team before operational decisions.

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="MISFlow AI helps teams upload spreadsheet data, map business columns, calculate EBITDA, and export location-wise reports in-browser."
+    />
+    <title>MISFlow AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Sidebar navigation">
+        <div class="brand-block">
+          <div class="brand-mark">M</div>
+          <div>
+            <p class="eyebrow">Business Intelligence</p>
+            <h1>MISFlow AI</h1>
+          </div>
+        </div>
+
+        <nav class="nav">
+          <a href="#overview" class="nav-link active">Overview</a>
+          <a href="#upload" class="nav-link">Uploads</a>
+          <a href="#mapping" class="nav-link">Mapping</a>
+          <a href="#preview" class="nav-link">Preview</a>
+          <a href="#report" class="nav-link">Report</a>
+        </nav>
+
+        <div class="security-card">
+          <h2>Privacy</h2>
+          <p>
+            Files are processed only in the current browser session. No data is uploaded to a
+            server, database, or external API.
+          </p>
+        </div>
+      </aside>
+
+      <main class="main-panel">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">MIS Reporting MVP</p>
+            <h2>Business performance dashboard</h2>
+          </div>
+
+          <div class="topbar-actions">
+            <button type="button" class="btn btn-secondary" id="loadSampleBtn">
+              Load Sample Data
+            </button>
+            <button type="button" class="btn btn-secondary" id="clearDataBtn">
+              Clear Data
+            </button>
+            <button type="button" class="btn btn-primary" id="exportBtn" disabled>
+              Export CSV
+            </button>
+          </div>
+        </header>
+
+        <div id="statusBanner" class="status-banner info" role="status" aria-live="polite">
+          Upload a CSV, XLS, or XLSX file to begin a local financial analysis.
+        </div>
+
+        <section id="overview" class="metrics-grid" aria-label="KPI summary">
+          <article class="metric-card accent">
+            <span class="metric-label">Total Revenue</span>
+            <strong class="metric-value" id="kpiRevenue">₹0</strong>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Total Expense</span>
+            <strong class="metric-value" id="kpiExpense">₹0</strong>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">EBITDA</span>
+            <strong class="metric-value" id="kpiEbitda">₹0</strong>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Locations</span>
+            <strong class="metric-value" id="kpiLocations">0</strong>
+          </article>
+        </section>
+
+        <section id="upload" class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Data intake</p>
+              <h3>Upload reports</h3>
+            </div>
+          </div>
+
+          <label class="upload-zone" for="fileInput" id="uploadZone">
+            <input
+              id="fileInput"
+              type="file"
+              accept=".csv,.xls,.xlsx"
+              multiple
+              aria-label="Upload CSV, XLS, or XLSX files"
+            />
+            <span class="upload-icon" aria-hidden="true">⇪</span>
+            <span class="upload-copy">
+              Drag and drop files here or click to browse. Supported formats: CSV, XLS, XLSX.
+            </span>
+          </label>
+
+          <div class="upload-meta">
+            <span>Maximum file size: 10 MB per file</span>
+            <span>All processing stays in your browser</span>
+          </div>
+
+          <div class="upload-list-wrapper">
+            <h4>Uploaded files</h4>
+            <ul id="uploadedFilesList" class="uploaded-files-list empty">
+              <li>No files uploaded yet.</li>
+            </ul>
+          </div>
+        </section>
+
+        <section id="mapping" class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Column mapping</p>
+              <h3>Map report fields</h3>
+            </div>
+          </div>
+
+          <div id="mappingGrid" class="mapping-grid" aria-live="polite">
+            <p class="empty-copy">Upload data to map location, revenue, and expense columns.</p>
+          </div>
+        </section>
+
+        <section id="preview" class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Data preview</p>
+              <h3>Uploaded records</h3>
+            </div>
+          </div>
+
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr id="previewTableHead"></tr>
+              </thead>
+              <tbody id="previewTableBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="report" class="panel report-panel">
+          <div class="panel-header report-header">
+            <div>
+              <p class="eyebrow">Location-wise summary</p>
+              <h3>EBITDA estimate report</h3>
+            </div>
+
+            <div class="report-tools">
+              <label class="search-field" for="reportSearch">
+                <span class="sr-only">Search locations</span>
+                <input id="reportSearch" type="search" placeholder="Search locations" />
+              </label>
+              <label class="sort-field" for="sortBy">
+                <span class="sr-only">Sort report</span>
+                <select id="sortBy">
+                  <option value="revenue-desc">Revenue: High to low</option>
+                  <option value="revenue-asc">Revenue: Low to high</option>
+                  <option value="ebitda-desc">EBITDA: High to low</option>
+                  <option value="ebitda-asc">EBITDA: Low to high</option>
+                  <option value="location-asc">Location: A to Z</option>
+                </select>
+              </label>
+            </div>
+          </div>
+
+          <div class="report-layout">
+            <div class="table-wrapper chart-report-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Location</th>
+                    <th>Revenue</th>
+                    <th>Expense</th>
+                    <th>EBITDA</th>
+                  </tr>
+                </thead>
+                <tbody id="reportTableBody"></tbody>
+              </table>
+            </div>
+
+            <div class="chart-panel" aria-label="Revenue vs expense chart">
+              <h4>Revenue vs expense</h4>
+              <div id="chartBars" class="chart-bars"></div>
+            </div>
+          </div>
+        </section>
+
+        <div class="privacy-footer">
+          <p>
+            This app uses the SheetJS library from the jsDelivr CDN for Excel and CSV parsing in the
+            browser. No files are uploaded to an external server.
+          </p>
+        </div>
+      </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
