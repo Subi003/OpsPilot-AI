@@ -393,6 +393,17 @@ function getAllColumns(rows) {
   return [...columns];
 }
 
+function setMappingValue(key, value) {
+  if (key === 'location') {
+    state.mapping.location = value || '';
+    return;
+  }
+
+  state.mapping[key] = Array.isArray(value)
+    ? value.filter(Boolean)
+    : normalizeSelectedColumns(value);
+}
+
 function renderMappingControls() {
   const mappingGrid = document.getElementById('mappingGrid');
   const columns = getAllColumns(state.rows);
@@ -428,10 +439,10 @@ function renderMappingControls() {
       select.size = Math.min(columns.length + 1, 6);
     }
 
-    const placeholder = document.createElement('option');
-    placeholder.value = '';
-    placeholder.textContent = multi ? 'Select one or more columns' : 'Select a column';
     if (!multi) {
+      const placeholder = document.createElement('option');
+      placeholder.value = '';
+      placeholder.textContent = 'Select a column';
       select.appendChild(placeholder);
     }
 
@@ -440,21 +451,22 @@ function renderMappingControls() {
       option.value = column;
       option.textContent = column;
 
-      const selectedValues = normalizeSelectedColumns(state.mapping[key]);
-      if (selectedValues.includes(column)) {
-        option.selected = true;
+      if (multi) {
+        const selectedValues = normalizeSelectedColumns(state.mapping[key]);
+        option.selected = selectedValues.includes(column);
+      } else {
+        option.selected = state.mapping.location === column;
       }
 
       select.appendChild(option);
     });
 
     select.addEventListener('change', (event) => {
-      if (!multi) {
-        state.mapping[key] = event.target.value;
-      } else {
-        state.mapping[key] = Array.from(event.target.selectedOptions).map((option) => option.value);
-      }
+      const nextValue = multi
+        ? Array.from(event.target.selectedOptions).map((option) => option.value)
+        : event.target.value;
 
+      setMappingValue(key, nextValue);
       renderAll();
     });
 
