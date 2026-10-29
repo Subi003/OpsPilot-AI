@@ -5,6 +5,8 @@
 3. Configure the application.
 4. Run the application using the project instructions.
 
+Before install dependencies check you internet connection.
+
 # OpsPilot AI / MISFlow AI
 
 A lightweight browser-based business reporting dashboard for analyzing location-wise revenue, expense, and EBITDA from spreadsheet data.
