@@ -1,3 +1,10 @@
+## Getting Started
+
+1. Clone the repository.
+2. Install the required dependencies.
+3. Configure the application.
+4. Run the application using the project instructions.
+
 # OpsPilot AI / MISFlow AI
 
 A lightweight browser-based business reporting dashboard for analyzing location-wise revenue, expense, and EBITDA from spreadsheet data.
