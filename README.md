@@ -13,6 +13,20 @@ const SAMPLE_DATA = [
   { Location: 'Delhi', Revenue: 1040000, Expense: 780000 }
 ];
 
+const SAMPLE_EXCEL_ROWS = [
+  ['Location', 'Revenue', 'Expense'],
+  ['Bengaluru', 1050000, 740000],
+  ['Hyderabad', 980000, 700000],
+  ['Chennai', 860000, 610000],
+  ['Bengaluru', 1160000, 810000],
+  ['Pune', 730000, 520000],
+  ['Hyderabad', 890000, 670000],
+  ['Chennai', 760000, 540000],
+  ['Pune', 675000, 495000],
+  ['Delhi', 930000, 690000],
+  ['Delhi', 1040000, 780000]
+];
+
 const state = {
   files: [],
   rows: [],
@@ -45,6 +59,7 @@ function initializeApp() {
   const exportBtn = document.getElementById('exportBtn');
   const searchInput = document.getElementById('reportSearch');
   const sortSelect = document.getElementById('sortBy');
+  const downloadSampleExcelBtn = document.getElementById('downloadSampleExcelBtn');
 
   fileInput.addEventListener('change', async (event) => {
     const files = Array.from(event.target.files || []);
@@ -73,6 +88,10 @@ function initializeApp() {
     if (files.length) {
       await handleFiles(files);
     }
+  });
+
+  downloadSampleExcelBtn.addEventListener('click', () => {
+    downloadSampleExcel();
   });
 
   loadSampleBtn.addEventListener('click', () => {
@@ -140,6 +159,37 @@ function isSupportedFile(file) {
   const supported = ['csv', 'xls', 'xlsx'];
   const extension = file.name.split('.').pop()?.toLowerCase();
   return supported.includes(extension || '');
+}
+
+function generateDummyWorkbook() {
+  const workbook = XLSX.utils.book_new();
+  const worksheet = XLSX.utils.aoa_to_sheet(SAMPLE_EXCEL_ROWS);
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'MISFlow_Data');
+  return workbook;
+}
+
+function downloadSampleExcel() {
+  if (typeof XLSX === 'undefined') {
+    setStatus('error', 'SheetJS did not load correctly. The dummy Excel file could not be generated.');
+    return;
+  }
+
+  const workbook = generateDummyWorkbook();
+  const buffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+  const blob = new Blob([buffer], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  });
+
+  const link = document.createElement('a');
+  const dateStamp = new Date().toISOString().slice(0, 10);
+  link.href = URL.createObjectURL(blob);
+  link.download = `misflow-sample-report-${dateStamp}.xlsx`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(link.href);
+
+  setStatus('success', 'Dummy Excel file downloaded. Re-upload it to test the import and report workflow.');
 }
 
 async function handleFiles(files) {

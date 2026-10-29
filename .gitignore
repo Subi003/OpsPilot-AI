@@ -9,6 +9,7 @@ MISFlow AI is a browser-based MIS reporting MVP designed for static deployment o
 - Auto-suggested column mapping for `Location / Branch`, `Revenue`, and `Expense`
 - KPI summary cards for total revenue, expense, EBITDA, and location count
 - Location-wise business report with totals and search/filter controls
+- Downloadable dummy Excel file for testing the full upload workflow
 - Export to CSV with final totals and formula-safe sanitization
 - Demo mode with realistic sample data
 - Responsive SaaS dashboard built with vanilla HTML, CSS, and JavaScript
@@ -34,6 +35,18 @@ MISFlow AI is a browser-based MIS reporting MVP designed for static deployment o
    python3 -m http.server 8000
    ```
 3. Visit http://localhost:8000 in your browser.
+
+## Dummy Excel test workflow
+
+Use the built-in download button to generate a sample `.xlsx` file:
+
+1. Click `Download Dummy Excel` in the dashboard.
+2. Save the generated file locally.
+3. Re-upload the file using the upload zone.
+4. Check that the mapped columns are recognized and the report summary updates correctly.
+5. Export the final CSV and verify totals.
+
+This is designed to help validate the complete import-to-report cycle without requiring a backend.
 
 ## GitHub upload instructions
 
@@ -75,9 +88,9 @@ This project loads the SheetJS library from the jsDelivr CDN in the browser for 
 
 ## Demo workflow
 
-- Click "Load Sample Data".
-- Review the auto-mapped columns.
-- Select the correct location, revenue, and expense fields if needed.
+- Click "Download Dummy Excel" to get a sample workbook.
+- Re-upload it to validate business logic and column mapping.
+- Click "Load Sample Data" for a built-in data set.
 - Review KPI cards and the location-wise report.
 - Export the report as a CSV file.
 
@@ -116,6 +129,7 @@ The MVP should be checked for:
 
 - Sample data generates a valid report
 - CSV and XLSX files import correctly
+- Dummy Excel file downloads and can be re-uploaded successfully
 - Multiple files can be processed together
 - Missing or mismatched columns are handled gracefully
 - Negative values and invalid numeric values are reported clearly
