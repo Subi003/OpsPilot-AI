@@ -366,20 +366,49 @@ function clearAllData() {
   renderAll();
 }
 
+function filterAvailableColumns(columns, selectedValues) {
+  const available = new Set(columns);
+  return normalizeSelectedColumns(selectedValues).filter((column) => available.has(column));
+}
+
 function buildMappingsFromCurrentData() {
   const columns = getAllColumns(state.rows);
-  const mapping = preferMapping(columns);
+  const inferred = preferMapping(columns);
 
-  const inferredRevenue = Array.isArray(mapping.revenue) ? mapping.revenue : normalizeSelectedColumns(mapping.revenue);
-  const inferredExpense = Array.isArray(mapping.expense) ? mapping.expense : normalizeSelectedColumns(mapping.expense);
+  const previousLocation = typeof state.mapping?.location === 'string' ? state.mapping.location : '';
+  const previousRevenue = normalizeSelectedColumns(state.mapping?.revenue);
+  const previousExpense = normalizeSelectedColumns(state.mapping?.expense);
 
-  const allRevenueColumns = columns.filter((column) => isRevenueLikeColumn(column));
-  const allExpenseColumns = columns.filter((column) => isExpenseLikeColumn(column));
+  const location = columns.includes(previousLocation)
+    ? previousLocation
+    : inferred.location || '';
+
+  const revenueFromPrevious = filterAvailableColumns(columns, previousRevenue);
+  const expenseFromPrevious = filterAvailableColumns(columns, previousExpense);
+
+  const inferredRevenue = Array.isArray(inferred.revenue)
+    ? inferred.revenue.filter((column) => columns.includes(column))
+    : [];
+  const inferredExpense = Array.isArray(inferred.expense)
+    ? inferred.expense.filter((column) => columns.includes(column))
+    : [];
+
+  const finalRevenue = revenueFromPrevious.length
+    ? revenueFromPrevious
+    : inferredRevenue.length
+      ? inferredRevenue
+      : columns.filter((column) => isRevenueLikeColumn(column)).slice(0, 3);
+
+  const finalExpense = expenseFromPrevious.length
+    ? expenseFromPrevious
+    : inferredExpense.length
+      ? inferredExpense
+      : columns.filter((column) => isExpenseLikeColumn(column)).slice(0, 3);
 
   state.mapping = {
-    location: mapping.location || '',
-    revenue: inferredRevenue.length ? inferredRevenue : allRevenueColumns.slice(0, 3),
-    expense: inferredExpense.length ? inferredExpense : allExpenseColumns.slice(0, 3)
+    location,
+    revenue: finalRevenue,
+    expense: finalExpense
   };
 
   renderMappingControls();
