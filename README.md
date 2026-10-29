@@ -30,7 +30,11 @@ const SAMPLE_EXCEL_ROWS = [
 const state = {
   files: [],
   rows: [],
-  mapping: {},
+  mapping: {
+    location: '',
+    revenue: [],
+    expense: []
+  },
   reportRows: [],
   summary: null,
   filterText: '',
@@ -134,6 +138,38 @@ function normalizeColumnName(value) {
     .trim();
 }
 
+function normalizeSelectedColumns(value) {
+  if (Array.isArray(value)) {
+    return value.filter(Boolean);
+  }
+
+  if (typeof value === 'string' && value) {
+    return [value];
+  }
+
+  return [];
+}
+
+function isRevenueLikeColumn(columnName) {
+  const normalized = normalizeColumnName(columnName);
+  const revenueKeywords = [
+    'revenue', 'sales', 'income', 'turnover', 'net revenue', 'gross revenue', 'total revenue',
+    'sell', 'amount received', 'sales revenue', 'total sales'
+  ];
+
+  return revenueKeywords.some((keyword) => normalized.includes(keyword));
+}
+
+function isExpenseLikeColumn(columnName) {
+  const normalized = normalizeColumnName(columnName);
+  const expenseKeywords = [
+    'expense', 'expenses', 'cost', 'costs', 'spend', 'operating expense', 'total expense',
+    'expense amount', 'cost of goods', 'marketing', 'salary', 'rent', 'payroll', 'overhead'
+  ];
+
+  return expenseKeywords.some((keyword) => normalized.includes(keyword));
+}
+
 function preferMapping(columns) {
   const rules = {
     location: ['branch', 'location', 'store', 'site', 'region', 'city', 'office', 'area'],
@@ -144,12 +180,12 @@ function preferMapping(columns) {
   const matches = {};
 
   Object.entries(rules).forEach(([key, keywords]) => {
-    const target = columns.find((column) => {
+    const target = columns.filter((column) => {
       const normalized = normalizeColumnName(column);
       return keywords.some((keyword) => normalized.includes(keyword));
     });
 
-    matches[key] = target || '';
+    matches[key] = key === 'location' ? (target[0] || '') : target;
   });
 
   return matches;
@@ -307,7 +343,11 @@ function loadSampleData() {
 function clearAllData() {
   state.files = [];
   state.rows = [];
-  state.mapping = {};
+  state.mapping = {
+    location: '',
+    revenue: [],
+    expense: []
+  };
   state.reportRows = [];
   state.summary = null;
   state.filterText = '';
@@ -325,13 +365,18 @@ function buildMappingsFromCurrentData() {
   const columns = getAllColumns(state.rows);
   const mapping = preferMapping(columns);
 
-  const selected = {
+  const inferredRevenue = Array.isArray(mapping.revenue) ? mapping.revenue : normalizeSelectedColumns(mapping.revenue);
+  const inferredExpense = Array.isArray(mapping.expense) ? mapping.expense : normalizeSelectedColumns(mapping.expense);
+
+  const allRevenueColumns = columns.filter((column) => isRevenueLikeColumn(column));
+  const allExpenseColumns = columns.filter((column) => isExpenseLikeColumn(column));
+
+  state.mapping = {
     location: mapping.location || '',
-    revenue: mapping.revenue || '',
-    expense: mapping.expense || ''
+    revenue: inferredRevenue.length ? inferredRevenue : allRevenueColumns.slice(0, 3),
+    expense: inferredExpense.length ? inferredExpense : allExpenseColumns.slice(0, 3)
   };
 
-  state.mapping = { ...selected };
   renderMappingControls();
 }
 
@@ -353,14 +398,14 @@ function renderMappingControls() {
   }
 
   const labels = [
-    { key: 'location', label: 'Location / Branch' },
-    { key: 'revenue', label: 'Revenue' },
-    { key: 'expense', label: 'Expense' }
+    { key: 'location', label: 'Location / Branch', multi: false },
+    { key: 'revenue', label: 'Revenue columns', multi: true },
+    { key: 'expense', label: 'Expense columns', multi: true }
   ];
 
   mappingGrid.innerHTML = '';
 
-  labels.forEach(({ key, label }) => {
+  labels.forEach(({ key, label, multi }) => {
     const field = document.createElement('div');
     field.className = 'map-field';
 
@@ -373,24 +418,38 @@ function renderMappingControls() {
     select.name = key;
     select.setAttribute('aria-label', label);
 
+    if (multi) {
+      select.multiple = true;
+      select.size = Math.min(columns.length + 1, 6);
+    }
+
     const placeholder = document.createElement('option');
     placeholder.value = '';
-    placeholder.textContent = 'Select a column';
-    select.appendChild(placeholder);
+    placeholder.textContent = multi ? 'Select one or more columns' : 'Select a column';
+    if (!multi) {
+      select.appendChild(placeholder);
+    }
 
     columns.forEach((column) => {
       const option = document.createElement('option');
       option.value = column;
       option.textContent = column;
-      if (state.mapping[key] === column) {
+
+      const selectedValues = normalizeSelectedColumns(state.mapping[key]);
+      if (selectedValues.includes(column)) {
         option.selected = true;
       }
+
       select.appendChild(option);
     });
 
     select.addEventListener('change', (event) => {
-      const nextValue = event.target.value;
-      state.mapping[key] = nextValue;
+      if (!multi) {
+        state.mapping[key] = event.target.value;
+      } else {
+        state.mapping[key] = Array.from(event.target.selectedOptions).map((option) => option.value);
+      }
+
       renderAll();
     });
 
@@ -442,7 +501,11 @@ function renderUploadedFiles() {
         state.files.splice(index, 1);
         state.rows = state.files.flatMap((entry) => entry.rows);
         if (!state.files.length) {
-          state.mapping = {};
+          state.mapping = {
+            location: '',
+            revenue: [],
+            expense: []
+          };
         } else {
           buildMappingsFromCurrentData();
         }
@@ -493,10 +556,10 @@ function renderReportTable() {
   tableBody.innerHTML = '';
 
   const locationColumn = state.mapping.location || '';
-  const revenueColumn = state.mapping.revenue || '';
-  const expenseColumn = state.mapping.expense || '';
+  const revenueColumns = normalizeSelectedColumns(state.mapping.revenue);
+  const expenseColumns = normalizeSelectedColumns(state.mapping.expense);
 
-  if (!state.rows.length || !locationColumn || !revenueColumn || !expenseColumn) {
+  if (!state.rows.length || !locationColumn || !revenueColumns.length || !expenseColumns.length) {
     const row = document.createElement('tr');
     const cell = document.createElement('td');
     cell.colSpan = 4;
@@ -592,22 +655,30 @@ function applySorting(rows, value) {
   return sorted;
 }
 
+function sumSelectedColumns(row, selectedColumns) {
+  const numericValues = selectedColumns
+    .map((column) => parseCurrency(row[column]))
+    .filter((value) => value !== null && Number.isFinite(value));
+
+  return numericValues.reduce((sum, value) => sum + value, 0);
+}
+
 function buildReport() {
   const locationColumn = state.mapping.location;
-  const revenueColumn = state.mapping.revenue;
-  const expenseColumn = state.mapping.expense;
+  const revenueColumns = normalizeSelectedColumns(state.mapping.revenue);
+  const expenseColumns = normalizeSelectedColumns(state.mapping.expense);
   const totals = new Map();
   const warnings = [];
 
   state.rows.forEach((row, index) => {
     const rawLocation = row[locationColumn];
-    const revenue = parseCurrency(row[revenueColumn]);
-    const expense = parseCurrency(row[expenseColumn]);
+    const revenue = sumSelectedColumns(row, revenueColumns);
+    const expense = sumSelectedColumns(row, expenseColumns);
 
     const location = String(rawLocation ?? '').trim() || 'Unassigned';
 
-    if (revenue === null || expense === null) {
-      warnings.push(`Row ${index + 1}: invalid revenue or expense values were skipped.`);
+    if (!revenueColumns.length || !expenseColumns.length) {
+      warnings.push(`Row ${index + 1}: please select at least one revenue column and one expense column.`);
       return;
     }
 
@@ -811,3 +882,4 @@ function renderAll() {
 window.addEventListener('beforeunload', () => {
   // Intentionally do not persist uploaded financial data in browser storage.
 });
+

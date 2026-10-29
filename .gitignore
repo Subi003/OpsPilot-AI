@@ -7,6 +7,7 @@ MISFlow AI is a browser-based MIS reporting MVP designed for static deployment o
 - Drag-and-drop upload for CSV, XLS, and XLSX files
 - Multi-file processing in the browser only
 - Auto-suggested column mapping for `Location / Branch`, `Revenue`, and `Expense`
+- Flexible multi-column support for revenue and expense data, so raw spreadsheets with multiple amount fields can be mapped and totaled together
 - KPI summary cards for total revenue, expense, EBITDA, and location count
 - Location-wise business report with totals and search/filter controls
 - Downloadable dummy Excel file for testing the full upload workflow
@@ -47,6 +48,31 @@ Use the built-in download button to generate a sample `.xlsx` file:
 5. Export the final CSV and verify totals.
 
 This is designed to help validate the complete import-to-report cycle without requiring a backend.
+
+## Flexible data format support
+
+The app is designed to work with more than one amount column. If your raw report contains multiple fields such as `Gross Sales`, `Discount`, `Net Sales`, `Operating Expense`, `Marketing Cost`, or `Other Cost`, you can select multiple columns for Revenue and Expense in the mapping panel.
+
+The app then adds the selected revenue columns together and the selected expense columns together before calculating EBITDA.
+
+Example:
+
+```csv
+Branch,Gross Sales,Discount,Net Revenue,Marketing Expense,Delivery Expense
+Bengaluru,1500000,200000,1300000,90000,120000
+Hyderabad,1200000,180000,1020000,85000,105000
+```
+
+Map:
+- Location / Branch = Branch
+- Revenue columns = Net Revenue
+- Expense columns = Marketing Expense, Delivery Expense
+
+Or, if you want to calculate directly from raw fields:
+- Revenue columns = Gross Sales, Discount
+- Expense columns = Marketing Expense, Delivery Expense
+
+Note: Use the columns that represent the true financial inputs for your business logic.
 
 ## GitHub upload instructions
 
@@ -110,6 +136,7 @@ This application uses a simplified EBITDA estimate based on the selected revenue
 
 - Ensure the uploaded sheet contains recognizable headers such as `Location`, `Branch`, `Revenue`, `Expense`, or similar.
 - Manually choose the correct mapping columns from the mapping form.
+- For multi-column spreadsheets, select one or more revenue columns and one or more expense columns in the mapping panel.
 
 ### No report appears
 
@@ -132,6 +159,7 @@ The MVP should be checked for:
 - Dummy Excel file downloads and can be re-uploaded successfully
 - Multiple files can be processed together
 - Missing or mismatched columns are handled gracefully
+- Multiple revenue and expense columns can be selected and totaled together
 - Negative values and invalid numeric values are reported clearly
 - Total EBITDA matches total revenue minus total expense
 - CSV export includes totals and a safe filename
@@ -142,3 +170,4 @@ The MVP should be checked for:
 - This is a static, browser-only MVP and does not include persistent storage or user accounts.
 - It does not process formulas or macro code embedded in uploaded files.
 - Financial calculations are simplified and should be reviewed by a finance or accounting team before operational decisions.
+
