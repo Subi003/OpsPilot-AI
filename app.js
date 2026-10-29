@@ -1,4 +1,4 @@
-const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
+const MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024;
 
 const SAMPLE_DATA = [
   { Location: 'Bengaluru', Revenue: 1050000, Expense: 740000 },
@@ -244,7 +244,7 @@ async function handleFiles(files) {
     }
 
     if (file.size > MAX_FILE_SIZE_BYTES) {
-      errors.push(`${file.name} exceeds the 10 MB limit.`);
+      errors.push(`${file.name} exceeds the 50 MB limit.`);
       continue;
     }
 
