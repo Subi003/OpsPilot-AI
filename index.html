@@ -52,6 +52,9 @@
           </div>
 
           <div class="topbar-actions">
+            <button type="button" class="btn btn-secondary" id="alwaysModeBtn">
+              Always
+            </button>
             <button type="button" class="btn btn-secondary" id="downloadSampleExcelBtn">
               Download Dummy Excel
             </button>
@@ -66,6 +69,10 @@
             </button>
           </div>
         </header>
+
+        <div id="alwaysHeader" class="always-header" hidden aria-live="polite">
+          Always mode enabled.
+        </div>
 
         <div id="statusBanner" class="status-banner info" role="status" aria-live="polite">
           Download the dummy Excel file, re-upload it, and validate the full import-to-report workflow.
