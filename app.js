@@ -38,7 +38,12 @@ const state = {
   reportRows: [],
   summary: null,
   filterText: '',
-  sortValue: 'revenue-desc'
+  sortValue: 'revenue-desc',
+  detailSelection: {
+    column: '',
+    value: '',
+    rows: []
+  }
 };
 
 const currencyFormatter = new Intl.NumberFormat('en-IN', {
@@ -133,6 +138,7 @@ function initializeApp() {
   renderMappingControls();
   renderPreviewTable();
   renderReportTable();
+  renderDetailPanel();
   updateKpiCards();
 }
 
@@ -287,6 +293,7 @@ async function handleFiles(files) {
 
   state.files.push(...addedFiles);
   state.rows = state.files.flatMap((item) => item.rows);
+  state.detailSelection = { column: '', value: '', rows: [] };
   buildMappingsFromCurrentData();
 
   if (fileErrors.length) {
@@ -340,6 +347,7 @@ function loadSampleData() {
 
   state.files = [{ name: 'sample-business-report.csv', size: 0, rows, rowsCount: rows.length }];
   state.rows = rows;
+  state.detailSelection = { column: '', value: '', rows: [] };
   buildMappingsFromCurrentData();
   setStatus('success', 'Sample business data loaded. Review the mapped fields and generate the report.');
   renderAll();
@@ -357,6 +365,7 @@ function clearAllData() {
   state.summary = null;
   state.filterText = '';
   state.sortValue = 'revenue-desc';
+  state.detailSelection = { column: '', value: '', rows: [] };
 
   document.getElementById('reportSearch').value = '';
   document.getElementById('sortBy').value = 'revenue-desc';
@@ -546,6 +555,7 @@ function renderUploadedFiles() {
       if (index >= 0) {
         state.files.splice(index, 1);
         state.rows = state.files.flatMap((entry) => entry.rows);
+        state.detailSelection = { column: '', value: '', rows: [] };
         if (!state.files.length) {
           state.mapping = {
             location: '',
@@ -562,6 +572,69 @@ function renderUploadedFiles() {
     li.appendChild(meta);
     li.appendChild(removeBtn);
     list.appendChild(li);
+  });
+}
+
+function showDetailForValue(column, value) {
+  if (!column || value === null || value === undefined || String(value).trim() === '') {
+    state.detailSelection = { column: '', value: '', rows: [] };
+    renderDetailPanel();
+    return;
+  }
+
+  const normalizedValue = String(value).trim();
+  const matchingRows = state.rows.filter((row) => {
+    const rowValue = row[column];
+    return String(rowValue ?? '').trim() === normalizedValue;
+  });
+
+  state.detailSelection = {
+    column,
+    value: normalizedValue,
+    rows: matchingRows
+  };
+
+  renderDetailPanel();
+}
+
+function renderDetailPanel() {
+  const summaryEl = document.getElementById('detailSummary');
+  const detailTableHead = document.getElementById('detailTableHead');
+  const detailTableBody = document.getElementById('detailTableBody');
+
+  if (!summaryEl || !detailTableHead || !detailTableBody) {
+    return;
+  }
+
+  const { column, value, rows } = state.detailSelection;
+
+  if (!column || !value || !rows.length) {
+    summaryEl.textContent = 'Click any value in the preview or report to inspect all matching records.';
+    detailTableHead.innerHTML = '';
+    detailTableBody.innerHTML = '<tr><td colspan="1" class="detail-empty">No matching records yet.</td></tr>';
+    return;
+  }
+
+  const columns = getAllColumns(rows);
+  summaryEl.textContent = `Showing ${rows.length} matching record${rows.length === 1 ? '' : 's'} for "${column}" = "${value}".`;
+
+  detailTableHead.innerHTML = '';
+  detailTableBody.innerHTML = '';
+
+  columns.forEach((columnName) => {
+    const th = document.createElement('th');
+    th.textContent = columnName;
+    detailTableHead.appendChild(th);
+  });
+
+  rows.forEach((row) => {
+    const tr = document.createElement('tr');
+    columns.forEach((columnName) => {
+      const td = document.createElement('td');
+      td.textContent = formatCellValue(row[columnName]);
+      tr.appendChild(td);
+    });
+    detailTableBody.appendChild(tr);
   });
 }
 
@@ -590,7 +663,15 @@ function renderPreviewTable() {
     const tr = document.createElement('tr');
     columns.slice(0, 8).forEach((column) => {
       const td = document.createElement('td');
-      td.textContent = formatCellValue(row[column]);
+      const cellValue = row[column];
+      td.textContent = formatCellValue(cellValue);
+
+      if (cellValue !== null && cellValue !== undefined && String(cellValue).trim() !== '') {
+        td.classList.add('clickable-cell');
+        td.title = `View all matching records for ${column}`;
+        td.addEventListener('click', () => showDetailForValue(column, cellValue));
+      }
+
       tr.appendChild(td);
     });
     body.appendChild(tr);
@@ -651,6 +732,11 @@ function renderReportTable() {
 
     const location = document.createElement('td');
     location.textContent = row.location;
+    if (!row.isTotal) {
+      location.classList.add('clickable-value');
+      location.title = `View matching records for ${row.location}`;
+      location.addEventListener('click', () => showDetailForValue(locationColumn, row.location));
+    }
 
     const revenue = document.createElement('td');
     revenue.textContent = formatCurrency(row.revenue);
@@ -921,6 +1007,7 @@ function renderAll() {
   renderMappingControls();
   renderPreviewTable();
   renderReportTable();
+  renderDetailPanel();
 }
 
 window.addEventListener('beforeunload', () => {
