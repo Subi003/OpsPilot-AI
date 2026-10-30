@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Always</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      .always-page {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 32px;
+      }
+
+      .always-card {
+        width: min(720px, 100%);
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        box-shadow: var(--shadow);
+        padding: 32px;
+      }
+
+      .always-card h1 {
+        margin: 0 0 12px;
+        font-size: clamp(2rem, 4vw, 3rem);
+      }
+
+      .always-card p {
+        margin: 0 0 20px;
+        color: var(--muted);
+        line-height: 1.7;
+      }
+
+      .always-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .btn-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="always-page">
+      <div class="always-card">
+        <p class="eyebrow">Feature page</p>
+        <h1>Always</h1>
+        <p>
+          This is the dedicated Always page. It opens separately without changing the current dashboard
+          workflow or the existing report logic on the main page.
+        </p>
+        <div class="always-actions">
+          <a class="btn btn-primary btn-link" href="index.html">Back to Dashboard</a>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
