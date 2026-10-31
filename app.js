@@ -69,6 +69,13 @@ function initializeApp() {
   const searchInput = document.getElementById('reportSearch');
   const sortSelect = document.getElementById('sortBy');
   const downloadSampleExcelBtn = document.getElementById('downloadSampleExcelBtn');
+  const chatbotToggleBtn = document.getElementById('chatbotToggleBtn');
+  const chatbotWidget = document.getElementById('chatbotWidget');
+  const chatbotCloseBtn = document.getElementById('chatbotCloseBtn');
+  const chatbotForm = document.getElementById('chatbotForm');
+  const chatbotInput = document.getElementById('chatbotInput');
+  const chatbotMessages = document.getElementById('chatbotMessages');
+  const quickPromptButtons = document.querySelectorAll('[data-chat-prompt]');
 
   if (!fileInput || !uploadZone || !loadSampleBtn || !clearDataBtn || !exportBtn || !searchInput || !sortSelect || !downloadSampleExcelBtn) {
     console.error('One or more required UI elements are missing from the page.');
@@ -130,6 +137,44 @@ function initializeApp() {
     renderReportTable();
   });
 
+  if (chatbotToggleBtn && chatbotWidget) {
+    chatbotToggleBtn.addEventListener('click', () => {
+      toggleChatbot();
+    });
+  }
+
+  if (chatbotCloseBtn && chatbotWidget) {
+    chatbotCloseBtn.addEventListener('click', () => {
+      toggleChatbot(false);
+    });
+  }
+
+  if (chatbotForm && chatbotInput && chatbotMessages) {
+    chatbotForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const value = chatbotInput.value.trim();
+      if (!value) {
+        return;
+      }
+      handleChatbotPrompt(value);
+      chatbotInput.value = '';
+      chatbotInput.focus();
+    });
+  }
+
+  quickPromptButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      const prompt = button.dataset.chatPrompt || '';
+      if (!prompt) {
+        return;
+      }
+      handleChatbotPrompt(prompt);
+      if (chatbotInput) {
+        chatbotInput.focus();
+      }
+    });
+  });
+
   if (typeof XLSX === 'undefined') {
     setStatus('error', 'SheetJS failed to load. Please refresh the page or check the CDN connection.');
   }
@@ -140,6 +185,107 @@ function initializeApp() {
   renderReportTable();
   renderDetailPanel();
   updateKpiCards();
+}
+
+function toggleChatbot(forceOpen) {
+  const widget = document.getElementById('chatbotWidget');
+  if (!widget) {
+    return;
+  }
+
+  const shouldOpen = typeof forceOpen === 'boolean' ? forceOpen : widget.hidden;
+  widget.hidden = !shouldOpen;
+
+  if (shouldOpen) {
+    const input = document.getElementById('chatbotInput');
+    if (input) {
+      input.focus();
+    }
+  }
+}
+
+function addChatbotMessage(text, type = 'bot') {
+  const messagesContainer = document.getElementById('chatbotMessages');
+  if (!messagesContainer) {
+    return;
+  }
+
+  const message = document.createElement('div');
+  message.className = `chatbot-message ${type}`;
+  message.textContent = text;
+  messagesContainer.appendChild(message);
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+function handleChatbotPrompt(prompt) {
+  const trimmed = String(prompt || '').trim();
+  if (!trimmed) {
+    return;
+  }
+
+  addChatbotMessage(trimmed, 'user');
+  const response = generateChatbotResponse(trimmed);
+
+  window.setTimeout(() => {
+    addChatbotMessage(response, 'bot');
+  }, 150);
+}
+
+function generateChatbotResponse(prompt) {
+  const normalizedPrompt = prompt.toLowerCase();
+  const locationColumn = state.mapping.location || 'not selected';
+  const revenueColumns = state.mapping.revenue.length ? state.mapping.revenue.join(', ') : 'not selected';
+  const expenseColumns = state.mapping.expense.length ? state.mapping.expense.join(', ') : 'not selected';
+
+  if (!state.rows.length) {
+    if (normalizedPrompt.includes('upload') || normalizedPrompt.includes('file') || normalizedPrompt.includes('csv')) {
+      return 'No spreadsheet data is loaded yet. You can download the sample Excel file from the dashboard or upload your own CSV/XLS/XLSX file.';
+    }
+    if (normalizedPrompt.includes('always')) {
+      return 'Always mode is the header explorer page that lets you upload an Excel file and inspect column names and unique values without building a report.';
+    }
+    return 'No data is uploaded yet. Download the sample Excel or upload a CSV/XLS/XLSX file to get started.';
+  }
+
+  if (normalizedPrompt.includes('always')) {
+    return 'Always mode is designed for quick spreadsheet inspection. It opens the header explorer, reads your sheet, and shows unique values for each column so you can quickly validate your data structure.';
+  }
+
+  if (normalizedPrompt.includes('map') || normalizedPrompt.includes('column')) {
+    return `The current mapping is: Location = "${locationColumn}", Revenue = "${revenueColumns}", Expense = "${expenseColumns}". If these look wrong, choose the correct columns in the mapping panel and the report will recalculate automatically.`;
+  }
+
+  if (normalizedPrompt.includes('export') || normalizedPrompt.includes('csv')) {
+    if (!state.summary || !state.reportRows.length) {
+      return 'There is no valid report yet. Upload data and complete the mapping before exporting a CSV.';
+    }
+    return 'Use the Export CSV button in the top-right actions. It will generate a downloadable file with the current location-wise revenue, expense, and EBITDA summary.';
+  }
+
+  if (normalizedPrompt.includes('summary') || normalizedPrompt.includes('total revenue') || normalizedPrompt.includes('revenue') || normalizedPrompt.includes('ebitda')) {
+    if (!state.summary) {
+      return 'The current report is not ready yet. Map the revenue and expense columns first, then the KPI cards and report will update.';
+    }
+
+    return `Current report summary: Total Revenue ${formatCurrency(state.summary.totalRevenue)}, Total Expense ${formatCurrency(state.summary.totalExpense)}, EBITDA ${formatCurrency(state.summary.ebitda)}, Locations ${state.summary.locationCount}.`;
+  }
+
+  if (normalizedPrompt.includes('file') || normalizedPrompt.includes('upload') || normalizedPrompt.includes('csv')) {
+    return 'Supported files are CSV, XLS, and XLSX. The app processes them locally in the browser and does not upload your files to an external server.';
+  }
+
+  if (normalizedPrompt.includes('report') || normalizedPrompt.includes('location')) {
+    if (!state.summary) {
+      return 'The report is not ready yet. Please complete the mapping for location, revenue, and expense columns.';
+    }
+    return `The report is grouped by location and currently includes ${state.summary.locationCount} locations. Use the search box and sort menu to narrow or reorder the results.`;
+  }
+
+  if (normalizedPrompt.includes('chatbot') || normalizedPrompt.includes('hello') || normalizedPrompt.includes('hi')) {
+    return 'Hi! I can help with upload issues, column mapping, KPI summaries, exports, and how the dashboard works.';
+  }
+
+  return `I can help with this dashboard. Right now, the app has ${state.rows.length} data rows loaded, the selected location column is "${locationColumn}", revenue fields are "${revenueColumns}", and expense fields are "${expenseColumns}". Ask me about mapping, export, report summary, or file upload steps.`;
 }
 
 function normalizeColumnName(value) {
