@@ -30,6 +30,7 @@
         <nav class="nav">
           <a href="#overview" class="nav-link active">Overview</a>
           <a href="always.html" class="nav-link">Always</a>
+          <a href="#chatbot" class="nav-link">Chatbot</a>
           <a href="#upload" class="nav-link">Uploads</a>
           <a href="#mapping" class="nav-link">Mapping</a>
           <a href="#preview" class="nav-link">Preview</a>
@@ -61,6 +62,9 @@
             </button>
             <button type="button" class="btn btn-secondary" id="clearDataBtn">
               Clear Data
+            </button>
+            <button type="button" class="btn btn-primary" id="chatbotToggleBtn">
+              Chatbot
             </button>
             <button type="button" class="btn btn-primary" id="exportBtn" disabled>
               Export CSV
@@ -203,6 +207,42 @@
             </div>
           </div>
         </section>
+
+        <div class="chatbot-widget" id="chatbotWidget" hidden>
+          <div class="chatbot-header">
+            <div>
+              <p class="eyebrow">Assistant</p>
+              <h3>OpsPilot Chatbot</h3>
+            </div>
+            <button type="button" class="chatbot-close" id="chatbotCloseBtn" aria-label="Close chatbot">
+              ×
+            </button>
+          </div>
+
+          <div class="chatbot-messages" id="chatbotMessages">
+            <div class="chatbot-message bot">
+              Hi! I can help with upload checks, column mapping, and revenue report questions.
+            </div>
+          </div>
+
+          <div class="chatbot-quick-actions">
+            <button type="button" class="chatbot-prompt" data-chat-prompt="How do I map revenue and expense columns?">
+              Map columns
+            </button>
+            <button type="button" class="chatbot-prompt" data-chat-prompt="What does Always mode do?">
+              Always mode
+            </button>
+            <button type="button" class="chatbot-prompt" data-chat-prompt="Help me export the report.">
+              Export report
+            </button>
+          </div>
+
+          <form id="chatbotForm" class="chatbot-form">
+            <label class="sr-only" for="chatbotInput">Ask the chatbot</label>
+            <input id="chatbotInput" type="text" placeholder="Ask OpsPilot..." />
+            <button type="submit" class="btn btn-primary">Send</button>
+          </form>
+        </div>
 
         <div class="privacy-footer">
           <p>
