@@ -12,61 +12,367 @@
     />
     <link rel="stylesheet" href="styles.css" />
     <style>
+      :root {
+        --bg: #f5faf6;
+        --panel: #ffffff;
+        --panel-alt: #edf9f1;
+        --primary: #0f7a4e;
+        --primary-dark: #0b5d3a;
+        --primary-soft: #d9f5e7;
+        --secondary: #dfece5;
+        --ink: #102019;
+        --muted: #5b6f65;
+        --border: #dfe8e1;
+        --danger: #c53d3d;
+        --danger-soft: #fde7e7;
+        --warning: #c9801e;
+        --warning-soft: #fff2db;
+        --success: #1a8a4d;
+        --shadow: 0 10px 30px rgba(15, 37, 27, 0.08);
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        background: linear-gradient(180deg, #eef7f1 0%, #f8faf9 100%);
+        color: var(--ink);
+        font-family: "Inter", sans-serif;
+      }
+
       .always-page {
         min-height: 100vh;
+        padding: 32px;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+      }
+
+      .always-shell {
+        width: min(1100px, 100%);
+        background: rgba(255,255,255,0.72);
+        border: 1px solid var(--border);
+        border-radius: 22px;
+        box-shadow: var(--shadow);
+        padding: 28px;
+        backdrop-filter: blur(8px);
+      }
+
+      .top-bar {
         display: flex;
         align-items: center;
-        justify-content: center;
-        padding: 32px;
-      }
-
-      .always-card {
-        width: min(720px, 100%);
-        background: var(--panel);
-        border: 1px solid var(--border);
-        border-radius: 20px;
-        box-shadow: var(--shadow);
-        padding: 32px;
-      }
-
-      .always-card h1 {
-        margin: 0 0 12px;
-        font-size: clamp(2rem, 4vw, 3rem);
-      }
-
-      .always-card p {
-        margin: 0 0 20px;
-        color: var(--muted);
-        line-height: 1.7;
-      }
-
-      .always-actions {
-        display: flex;
-        gap: 12px;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 20px;
         flex-wrap: wrap;
       }
 
-      .btn-link {
+      .eyebrow {
+        margin: 0 0 6px;
+        color: var(--primary);
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        font-size: 0.7rem;
+        font-weight: 700;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(1.8rem, 3vw, 2.5rem);
+      }
+
+      .btn {
+        border: none;
+        border-radius: 12px;
+        padding: 12px 16px;
+        font-weight: 600;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        cursor: pointer;
+        text-decoration: none;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        text-decoration: none;
+      }
+
+      .btn:hover { transform: translateY(-1px); }
+      .btn-primary {
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        color: white;
+        box-shadow: var(--shadow);
+      }
+
+      .btn-secondary {
+        background: var(--panel);
+        color: var(--ink);
+        border: 1px solid var(--border);
+      }
+
+      .upload-panel,
+      .result-panel {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 20px;
+      }
+
+      .upload-panel {
+        margin-bottom: 18px;
+      }
+
+      .upload-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+        margin-top: 12px;
+      }
+
+      .upload-input-wrap {
+        position: relative;
+        display: inline-block;
+        overflow: hidden;
+      }
+
+      .upload-input-wrap input[type="file"] {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        cursor: pointer;
+      }
+
+      .status {
+        margin-top: 14px;
+        padding: 10px 12px;
+        border-radius: 10px;
+        background: var(--panel-alt);
+        color: var(--ink);
+        border: 1px solid var(--border);
+        min-height: 42px;
+        display: flex;
+        align-items: center;
+      }
+
+      .result-panel h3 {
+        margin: 0 0 12px;
+      }
+
+      .field-select {
+        width: min(100%, 320px);
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        background: white;
+        color: var(--ink);
+        font: inherit;
+      }
+
+      .header-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 12px 0 18px;
+      }
+
+      .header-chip {
+        background: var(--primary-soft);
+        color: var(--ink);
+        border: 1px solid #cfe8d8;
+        border-radius: 999px;
+        padding: 8px 12px;
+        font-size: 0.85rem;
+        font-weight: 600;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 8px;
+      }
+
+      th, td {
+        text-align: left;
+        padding: 12px 10px;
+        border-bottom: 1px solid var(--border);
+        vertical-align: top;
+      }
+
+      th {
+        background: #f5faf6;
+        color: var(--ink);
+        font-weight: 700;
+      }
+
+      .empty-state {
+        color: var(--muted);
+        padding: 14px 0;
+      }
+
+      @media (max-width: 700px) {
+        .always-page { padding: 18px; }
+        .always-shell { padding: 18px; }
+        .top-bar { align-items: flex-start; }
       }
     </style>
   </head>
   <body>
     <div class="always-page">
-      <div class="always-card">
-        <p class="eyebrow">Feature page</p>
-        <h1>Always</h1>
-        <p>
-          This is the dedicated Always page. It opens separately without changing the current dashboard
-          workflow or the existing report logic on the main page.
-        </p>
-        <div class="always-actions">
-          <a class="btn btn-primary btn-link" href="index.html">Back to Dashboard</a>
+      <div class="always-shell">
+        <div class="top-bar">
+          <div>
+            <p class="eyebrow">Always mode</p>
+            <h1>Excel Header Explorer</h1>
+          </div>
+          <a class="btn btn-secondary" href="index.html">Back to Dashboard</a>
         </div>
+
+        <section class="upload-panel">
+          <div class="upload-row">
+            <label class="btn btn-primary upload-input-wrap">
+              Upload Excel/CSV
+              <input id="fileInput" type="file" accept=".csv,.xls,.xlsx" />
+            </label>
+          </div>
+          <div id="status" class="status">No file uploaded yet.</div>
+        </section>
+
+        <section class="result-panel">
+          <h3>Available headers</h3>
+          <div id="headerList" class="header-list empty-state">Upload a file to view headers.</div>
+
+          <label for="headerSelect" style="display:block; margin-bottom: 10px; font-weight:600;">Select a header</label>
+          <select id="headerSelect" class="field-select" aria-label="Select Excel header" disabled>
+            <option value="">Choose a header</option>
+          </select>
+
+          <div id="tableContainer" class="table-wrap" style="margin-top: 18px;">
+            <div class="empty-state">Select a header to view data.</div>
+          </div>
+        </section>
       </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script>
+      const fileInput = document.getElementById('fileInput');
+      const statusBox = document.getElementById('status');
+      const headerList = document.getElementById('headerList');
+      const headerSelect = document.getElementById('headerSelect');
+      const tableContainer = document.getElementById('tableContainer');
+
+      let workbookData = [];
+
+      fileInput.addEventListener('change', async (event) => {
+        const file = event.target.files && event.target.files[0];
+        if (!file) return;
+
+        try {
+          const buffer = await file.arrayBuffer();
+          const workbook = XLSX.read(buffer, { type: 'array', raw: false });
+          const sheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[sheetName];
+          const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+
+          if (!rows.length) {
+            statusBox.textContent = 'The uploaded sheet does not contain any rows.';
+            resetResult();
+            return;
+          }
+
+          const headers = rows[0].map((header, index) => String(header ?? `Column ${index + 1}`));
+          const dataRows = rows.slice(1).map((row) => {
+            const obj = {};
+            headers.forEach((header, index) => {
+              obj[header] = row[index] ?? '';
+            });
+            return obj;
+          });
+
+          workbookData = { headers, dataRows };
+          renderHeaders(headers);
+          renderSelect(headers);
+          statusBox.textContent = `Loaded ${file.name}. ${headers.length} headers found.`;
+          tableContainer.innerHTML = '<div class="empty-state">Select a header to view data.</div>';
+        } catch (error) {
+          statusBox.textContent = 'Unable to read the selected file. Please upload a valid Excel or CSV file.';
+          resetResult();
+        }
+      });
+
+      headerSelect.addEventListener('change', (event) => {
+        const selectedHeader = event.target.value;
+        if (!selectedHeader || !workbookData.headers.length) {
+          tableContainer.innerHTML = '<div class="empty-state">Select a header to view data.</div>';
+          return;
+        }
+
+        const selectedValues = workbookData.dataRows.map((row, index) => ({
+          row: index + 2,
+          value: row[selectedHeader] ?? ''
+        }));
+
+        renderSelectedHeaderData(selectedHeader, selectedValues);
+      });
+
+      function resetResult() {
+        headerList.innerHTML = 'Upload a file to view headers.';
+        headerList.classList.add('empty-state');
+        headerSelect.innerHTML = '<option value="">Choose a header</option>';
+        headerSelect.disabled = true;
+        workbookData = [];
+      }
+
+      function renderHeaders(headers) {
+        headerList.classList.remove('empty-state');
+        headerList.innerHTML = headers
+          .map((header) => `<span class="header-chip">${escapeHtml(header)}</span>`)
+          .join('');
+      }
+
+      function renderSelect(headers) {
+        headerSelect.innerHTML = '<option value="">Choose a header</option>' +
+          headers.map((header) => `<option value="${escapeAttribute(header)}">${escapeHtml(header)}</option>`).join('');
+        headerSelect.disabled = false;
+      }
+
+      function renderSelectedHeaderData(selectedHeader, values) {
+        if (!values.length) {
+          tableContainer.innerHTML = '<div class="empty-state">No data available for this header.</div>';
+          return;
+        }
+
+        const rowsHtml = values.map((item) => `
+          <tr>
+            <td>${item.row}</td>
+            <td>${escapeHtml(String(item.value ?? ''))}</td>
+          </tr>
+        `).join('');
+
+        tableContainer.innerHTML = `
+          <h4 style="margin: 0 0 10px;">${escapeHtml(selectedHeader)} data</h4>
+          <table>
+            <thead>
+              <tr>
+                <th>Row</th>
+                <th>${escapeHtml(selectedHeader)}</th>
+              </tr>
+            </thead>
+            <tbody>${rowsHtml}</tbody>
+          </table>
+        `;
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
+      function escapeAttribute(value) {
+        return escapeHtml(value).replace(/`/g, '&#96;');
+      }
+    </script>
   </body>
 </html>
