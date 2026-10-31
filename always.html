@@ -181,6 +181,12 @@
         padding: 8px 12px;
         font-size: 0.85rem;
         font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .header-chip:hover {
+        background: #d2f0dd;
       }
 
       table {
@@ -300,17 +306,12 @@
 
       headerSelect.addEventListener('change', (event) => {
         const selectedHeader = event.target.value;
-        if (!selectedHeader || !workbookData.headers.length) {
+        if (!selectedHeader || !workbookData.headers) {
           tableContainer.innerHTML = '<div class="empty-state">Select a header to view data.</div>';
           return;
         }
 
-        const selectedValues = workbookData.dataRows.map((row, index) => ({
-          row: index + 2,
-          value: row[selectedHeader] ?? ''
-        }));
-
-        renderSelectedHeaderData(selectedHeader, selectedValues);
+        showHeaderData(selectedHeader);
       });
 
       function resetResult() {
@@ -324,8 +325,16 @@
       function renderHeaders(headers) {
         headerList.classList.remove('empty-state');
         headerList.innerHTML = headers
-          .map((header) => `<span class="header-chip">${escapeHtml(header)}</span>`)
+          .map((header) => `<button type="button" class="header-chip" data-header="${escapeAttribute(header)}">${escapeHtml(header)}</button>`)
           .join('');
+
+        headerList.querySelectorAll('.header-chip').forEach((chip) => {
+          chip.addEventListener('click', () => {
+            const selectedHeader = chip.dataset.header;
+            headerSelect.value = selectedHeader;
+            showHeaderData(selectedHeader);
+          });
+        });
       }
 
       function renderSelect(headers) {
@@ -334,13 +343,31 @@
         headerSelect.disabled = false;
       }
 
-      function renderSelectedHeaderData(selectedHeader, values) {
-        if (!values.length) {
+      function showHeaderData(selectedHeader) {
+        if (!workbookData.headers || !selectedHeader) {
+          tableContainer.innerHTML = '<div class="empty-state">Select a header to view data.</div>';
+          return;
+        }
+
+        const seen = new Set();
+        const uniqueValues = [];
+
+        workbookData.dataRows.forEach((row, index) => {
+          const value = row[selectedHeader] ?? '';
+          const normalized = String(value).trim().toLowerCase();
+
+          if (normalized !== '' && !seen.has(normalized)) {
+            seen.add(normalized);
+            uniqueValues.push({ row: index + 2, value });
+          }
+        });
+
+        if (!uniqueValues.length) {
           tableContainer.innerHTML = '<div class="empty-state">No data available for this header.</div>';
           return;
         }
 
-        const rowsHtml = values.map((item) => `
+        const rowsHtml = uniqueValues.map((item) => `
           <tr>
             <td>${item.row}</td>
             <td>${escapeHtml(String(item.value ?? ''))}</td>
@@ -348,7 +375,7 @@
         `).join('');
 
         tableContainer.innerHTML = `
-          <h4 style="margin: 0 0 10px;">${escapeHtml(selectedHeader)} data</h4>
+          <h4 style="margin: 0 0 10px;">${escapeHtml(selectedHeader)} data (unique values)</h4>
           <table>
             <thead>
               <tr>
