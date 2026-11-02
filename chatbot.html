@@ -66,6 +66,13 @@
         flex-wrap: wrap;
       }
 
+      .topbar-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
       .eyebrow {
         margin: 0 0 6px;
         color: var(--primary);
@@ -105,6 +112,18 @@
         background: var(--panel);
         color: var(--ink);
         border: 1px solid var(--border);
+      }
+
+      .upload-btn {
+        position: relative;
+        overflow: hidden;
+      }
+
+      .upload-btn input {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        cursor: pointer;
       }
 
       .chat-box {
@@ -203,7 +222,14 @@
             <p class="eyebrow">Assistant</p>
             <h1>OpsPilot Chatbot</h1>
           </div>
-          <a href="index.html" class="btn btn-secondary">Back to Dashboard</a>
+
+          <div class="topbar-actions">
+            <label class="btn btn-primary upload-btn" aria-label="Upload file">
+              Upload file
+              <input id="chatFileInput" type="file" accept=".csv,.xls,.xlsx" />
+            </label>
+            <a href="index.html" class="btn btn-secondary">Back to Dashboard</a>
+          </div>
         </div>
 
         <div class="chat-box">
@@ -228,10 +254,12 @@
       </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script>
       const chatMessages = document.getElementById('chatMessages');
       const chatForm = document.getElementById('chatForm');
       const chatInput = document.getElementById('chatInput');
+      const chatFileInput = document.getElementById('chatFileInput');
       const quickButtons = document.querySelectorAll('.quick-btn');
 
       function addMessage(text, type = 'bot') {
@@ -276,6 +304,47 @@
 
         return 'I can help with mapping columns, uploading files, checking Always mode, and exporting the final report. Try asking: “How do I map revenue and expense columns?”';
       }
+
+      chatFileInput.addEventListener('change', (event) => {
+        const file = event.target.files && event.target.files[0];
+        if (!file) return;
+
+        addMessage(`Uploading ${file.name}...`, 'user');
+
+        if (typeof XLSX === 'undefined') {
+          addMessage('Spreadsheet support is unavailable because SheetJS failed to load.', 'bot');
+          chatFileInput.value = '';
+          return;
+        }
+
+        const reader = new FileReader();
+
+        reader.onload = (loadEvent) => {
+          try {
+            const arrayBuffer = loadEvent.target.result;
+            const workbook = XLSX.read(new Uint8Array(arrayBuffer), { type: 'array' });
+            const sheetName = workbook.SheetNames[0];
+            const sheet = workbook.Sheets[sheetName];
+            const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+
+            addMessage(
+              `${file.name} uploaded successfully. Found ${rows.length} row(s) in the first sheet. You can now use the dashboard mapping section or the Always mode explorer for the next step.`,
+              'bot'
+            );
+          } catch (error) {
+            addMessage(`I couldn’t read ${file.name}. Please upload a valid CSV, XLS, or XLSX file.`, 'bot');
+          } finally {
+            chatFileInput.value = '';
+          }
+        };
+
+        reader.onerror = () => {
+          addMessage(`I couldn’t read ${file.name}. Please try a different file.`, 'bot');
+          chatFileInput.value = '';
+        };
+
+        reader.readAsArrayBuffer(file);
+      });
 
       chatForm.addEventListener('submit', (event) => {
         event.preventDefault();
