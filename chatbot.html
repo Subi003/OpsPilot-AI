@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Ask questions and explore spreadsheet data privately in your browser." />
     <title>OpsPilot Chatbot</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -11,35 +12,41 @@
       :root { --panel:#fff; --panel-alt:#edf9f1; --primary:#0f7a4e; --primary-dark:#0b5d3a; --secondary:#dfece5; --ink:#102019; --muted:#5b6f65; --border:#dfe8e1; --danger:#a52c2c; --shadow:0 10px 30px rgba(15,37,27,.08); }
       * { box-sizing:border-box; }
       body { margin:0; min-height:100vh; background:linear-gradient(180deg,#eef7f1 0%,#f8faf9 100%); color:var(--ink); font-family:Inter,sans-serif; }
-      button,input { font:inherit; }
+      button,input,select { font:inherit; }
       .page { min-height:100vh; display:flex; justify-content:center; align-items:center; padding:28px; }
-      .shell { width:min(1000px,100%); background:rgba(255,255,255,.82); border:1px solid var(--border); border-radius:24px; box-shadow:var(--shadow); padding:24px; }
+      .shell { width:min(1040px,100%); background:rgba(255,255,255,.9); border:1px solid var(--border); border-radius:24px; box-shadow:var(--shadow); padding:24px; }
       .topbar { display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom:18px; }
       .eyebrow { margin:0 0 6px; color:var(--primary); text-transform:uppercase; letter-spacing:.12em; font-size:.7rem; font-weight:700; }
       h1 { margin:0; font-size:clamp(1.7rem,3vw,2.3rem); }
       .topbar-actions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
       .btn { border:0; border-radius:12px; padding:11px 15px; font-weight:650; cursor:pointer; text-decoration:none; display:inline-flex; justify-content:center; align-items:center; transition:transform .2s ease,box-shadow .2s ease; }
       .btn:hover { transform:translateY(-1px); }
-      .btn:focus-visible,input:focus-visible,.quick-btn:focus-visible { outline:3px solid rgba(15,122,78,.28); outline-offset:2px; }
+      .btn:focus-visible,input:focus-visible,.quick-btn:focus-visible,select:focus-visible { outline:3px solid rgba(15,122,78,.28); outline-offset:2px; }
       .btn-primary { background:linear-gradient(135deg,var(--primary),var(--primary-dark)); color:#fff; box-shadow:var(--shadow); }
       .btn-secondary { background:var(--panel); color:var(--ink); border:1px solid var(--border); }
+      .btn:disabled { opacity:.55; cursor:not-allowed; transform:none; }
       .upload-control { position:relative; overflow:hidden; }
       .upload-control input { position:absolute; inset:0; width:100%; height:100%; opacity:0; cursor:pointer; }
       .data-status { margin:0 0 14px; padding:10px 13px; border:1px solid var(--border); border-radius:11px; background:#f8fbf9; color:var(--muted); font-size:.87rem; line-height:1.45; }
       .data-status[data-state="error"] { color:var(--danger); background:#fff6f6; border-color:#f0caca; }
+      .toolbar { display:flex; align-items:center; flex-wrap:wrap; gap:10px; padding:0 0 13px; }
+      .toolbar label { color:var(--muted); font-size:.85rem; font-weight:600; }
+      .toolbar select { min-width:170px; max-width:100%; padding:8px 10px; border:1px solid var(--border); border-radius:9px; color:var(--ink); background:#fff; }
       .chat-box { background:var(--panel); border:1px solid var(--border); border-radius:18px; overflow:hidden; }
-      .chat-messages { height:min(55vh,500px); min-height:300px; overflow-y:auto; padding:18px; background:linear-gradient(180deg,#f9fbfa,#fff); }
+      .chat-messages { height:min(50vh,460px); min-height:280px; overflow-y:auto; padding:18px; background:linear-gradient(180deg,#f9fbfa,#fff); }
       .chat-message { display:flex; margin-bottom:14px; }
       .chat-message.user { justify-content:flex-end; }
-      .bubble { max-width:82%; padding:12px 14px; border-radius:14px; line-height:1.55; font-size:.95rem; white-space:pre-wrap; overflow-wrap:anywhere; }
+      .bubble { max-width:84%; padding:12px 14px; border-radius:14px; line-height:1.55; font-size:.95rem; white-space:pre-wrap; overflow-wrap:anywhere; }
       .chat-message.bot .bubble { background:var(--panel-alt); border:1px solid #dfeee5; border-bottom-left-radius:4px; }
       .chat-message.user .bubble { background:linear-gradient(135deg,var(--primary),var(--primary-dark)); color:#fff; border-bottom-right-radius:4px; }
       .quick-actions { display:flex; flex-wrap:wrap; gap:9px; padding:14px 18px 0; }
-      .quick-btn { background:var(--secondary); border:1px solid var(--border); color:var(--ink); border-radius:999px; padding:8px 12px; cursor:pointer; }
+      .quick-btn { background:var(--secondary); border:1px solid var(--border); color:var(--ink); border-radius:999px; padding:8px 12px; cursor:pointer; transition:background .15s ease; }
+      .quick-btn:hover { background:#cfe3d6; }
       .composer { display:flex; gap:10px; padding:16px 18px 18px; border-top:1px solid var(--border); background:#fbfdfc; }
       .composer input { flex:1; min-width:0; border:1px solid var(--border); border-radius:12px; padding:12px 14px; color:var(--ink); background:#fff; }
       .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
-      @media(max-width:700px) { .page{padding:14px;align-items:flex-start}.shell{padding:16px}.composer{flex-direction:column}.bubble{max-width:92%}.chat-messages{min-height:280px;height:52vh} }
+      .privacy-note { margin:12px 2px 0; color:var(--muted); font-size:.78rem; line-height:1.5; }
+      @media(max-width:700px) { .page{padding:14px;align-items:flex-start}.shell{padding:16px}.composer{flex-direction:column}.bubble{max-width:94%}.chat-messages{min-height:260px;height:52vh}.toolbar select{flex:1} }
     </style>
   </head>
   <body>
@@ -49,18 +56,25 @@
           <div><p class="eyebrow">Spreadsheet assistant · private, in-browser analysis</p><h1>OpsPilot Chatbot</h1></div>
           <div class="topbar-actions">
             <label class="btn btn-primary upload-control">Upload Excel/CSV<input id="chatFileInput" type="file" accept=".csv,.xls,.xlsx" aria-label="Upload CSV or Excel file" /></label>
+            <button class="btn btn-secondary" id="clearChatBtn" type="button">Clear chat</button>
             <a href="index.html" class="btn btn-secondary">Back to Dashboard</a>
           </div>
         </header>
         <p id="dataStatus" class="data-status" role="status" aria-live="polite">Upload a CSV, XLS, or XLSX file (maximum 100 MB) to ask questions about its data. Files are read in this browser and are not sent to a server.</p>
+        <div class="toolbar" id="sheetToolbar" hidden>
+          <label for="sheetSelect">Worksheet</label>
+          <select id="sheetSelect" aria-label="Choose worksheet"></select>
+        </div>
         <section class="chat-box" aria-label="Chat conversation">
           <div class="chat-messages" id="chatMessages" role="log" aria-live="polite" aria-relevant="additions">
-            <div class="chat-message bot"><div class="bubble">Upload a spreadsheet, then ask questions like “How many rows?”, “Total Revenue”, “Which city has the highest sales?”, or “Show the top 5 by expense”. I’ll calculate answers from the uploaded sheet.</div></div>
+            <div class="chat-message bot"><div class="bubble">Upload a spreadsheet and ask questions in plain language. I can calculate totals, averages, medians, rankings, category comparisons, distinct values, and data-quality checks. For example: “What is the average Revenue by City?”</div></div>
           </div>
           <div class="quick-actions" aria-label="Example questions">
-            <button class="quick-btn" type="button" data-prompt="What columns are in this file?">List columns</button>
-            <button class="quick-btn" type="button" data-prompt="How many rows are in this file?">Count rows</button>
             <button class="quick-btn" type="button" data-prompt="Give me a summary of this file">Summarize data</button>
+            <button class="quick-btn" type="button" data-prompt="What columns are in this file?">List columns</button>
+            <button class="quick-btn" type="button" data-prompt="Show the top 5 by Revenue">Top 5</button>
+            <button class="quick-btn" type="button" data-prompt="Compare Revenue by City">Compare categories</button>
+            <button class="quick-btn" type="button" data-prompt="Check data quality">Data quality</button>
           </div>
           <form class="composer" id="chatForm">
             <label class="sr-only" for="chatInput">Ask a question about the uploaded spreadsheet</label>
@@ -68,19 +82,23 @@
             <button class="btn btn-primary" type="submit">Send</button>
           </form>
         </section>
+        <p class="privacy-note">Your spreadsheet stays in this browser session. Analysis is performed locally; no file data is sent to a server or external AI service.</p>
       </section>
     </main>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script>
+      'use strict';
       const MAX_FILE_BYTES = 100 * 1024 * 1024;
       const chatMessages = document.getElementById('chatMessages');
       const chatForm = document.getElementById('chatForm');
       const chatInput = document.getElementById('chatInput');
       const fileInput = document.getElementById('chatFileInput');
       const dataStatus = document.getElementById('dataStatus');
-      const quickButtons = document.querySelectorAll('.quick-btn');
+      const sheetToolbar = document.getElementById('sheetToolbar');
+      const sheetSelect = document.getElementById('sheetSelect');
       const currency = new Intl.NumberFormat('en-IN', { style:'currency', currency:'INR', maximumFractionDigits:2 });
       const number = new Intl.NumberFormat('en-IN', { maximumFractionDigits:2 });
+      let workbook = null;
       let uploadedData = { fileName:'', headers:[], rows:[] };
       let lastMetricColumn = '';
 
@@ -93,116 +111,172 @@
       function parseNumber(value) {
         if (typeof value === 'number' && Number.isFinite(value)) return value;
         if (value === null || value === undefined || String(value).trim() === '') return null;
-        let text = String(value).trim(); const negative = /^\(.*\)$/.test(text) || /^-/.test(text);
-        text = text.replace(/[()]/g,'').replace(/[^\d.,]/g,'').replace(/,/g,'');
-        if (!text) return null; const parsed = Number(text); return Number.isFinite(parsed) ? (negative ? -parsed : parsed) : null;
+        const raw = String(value).trim();
+        const negative = /^\(.*\)$/.test(raw) || /^-/.test(raw);
+        const cleaned = raw.replace(/[()]/g,'').replace(/[^\d.,]/g,'').replace(/,/g,'');
+        if (!cleaned) return null;
+        const parsed = Number(cleaned);
+        return Number.isFinite(parsed) ? (negative ? -parsed : parsed) : null;
+      }
+      function formatValue(column, value) {
+        return /revenue|sales|income|expense|cost|amount|price|profit|ebitda|budget|salary|turnover/i.test(column) ? currency.format(value) : number.format(value);
       }
       function escapeHeaderRow(cells) {
         const seen = new Map();
-        return cells.map((cell,index) => { const base=String(cell ?? '').trim() || `Column ${index+1}`; const count=(seen.get(base)||0)+1; seen.set(base,count); return count===1 ? base : `${base} (${count})`; });
+        return cells.map((cell,index) => {
+          const base = String(cell ?? '').trim() || `Column ${index+1}`;
+          const count = (seen.get(base) || 0) + 1; seen.set(base,count);
+          return count === 1 ? base : `${base} (${count})`;
+        });
       }
-      function formatValue(value) { return /revenue|sales|income|expense|cost|amount|price|profit|ebitda|budget|salary/i.test(lastMetricColumn) ? currency.format(value) : number.format(value); }
-      function getMetricValues(column) { return uploadedData.rows.map((row,index)=>({row,index,value:parseNumber(row[column])})).filter(item=>item.value!==null); }
-      function findColumn(question,numericOnly=false) {
-        const q=normalize(question); let best=null, bestScore=0;
+      function loadSheet(sheetName) {
+        if (!workbook || !workbook.Sheets[sheetName]) return;
+        const matrix = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header:1, defval:'', blankrows:false, raw:false });
+        if (!matrix.length) throw new Error(`Worksheet “${sheetName}” is empty.`);
+        const headers = escapeHeaderRow(matrix[0]);
+        const rows = matrix.slice(1).map(cells => {
+          const row = {}; headers.forEach((header,index) => { row[header] = cells[index] ?? ''; }); return row;
+        }).filter(row => Object.values(row).some(value => String(value).trim() !== ''));
+        uploadedData = { fileName:uploadedData.fileName, headers, rows };
+        dataStatus.dataset.state = 'ready';
+        dataStatus.textContent = `${uploadedData.fileName} · ${sheetName} ready · ${number.format(rows.length)} rows · ${headers.length} columns. Ask a question about the data.`;
+        addMessage(`Worksheet “${sheetName}” loaded: ${number.format(rows.length)} rows and ${headers.length} columns.`, 'bot');
+      }
+      function findColumn(question, numericOnly=false, excludedColumn='') {
+        const q = normalize(question); let best = null, bestScore = 0;
         for (const header of uploadedData.headers) {
-          if (numericOnly && !uploadedData.rows.some(row=>parseNumber(row[header])!==null)) continue;
-          const h=normalize(header); if (!h) continue;
-          const words=h.split(' ').filter(word=>word.length>2);
-          const score=q.includes(h) ? 100+h.length : words.reduce((sum,word)=>sum+(q.includes(word)?word.length:0),0);
-          if (score>bestScore) { best=header; bestScore=score; }
+          if (header === excludedColumn) continue;
+          if (numericOnly && !uploadedData.rows.some(row => parseNumber(row[header]) !== null)) continue;
+          const h = normalize(header); if (!h) continue;
+          const words = h.split(' ').filter(word => word.length > 2);
+          const score = q.includes(h) ? 100 + h.length : words.reduce((sum,word) => sum + (q.includes(word) ? word.length : 0),0);
+          if (score > bestScore) { best = header; bestScore = score; }
         }
-        return bestScore>=3 ? best : null;
+        return bestScore >= 3 ? best : null;
       }
-      function findCategory(question,numericColumn) {
-        const q=normalize(question);
-        const categorical=uploadedData.headers.filter(header=>header!==numericColumn && uploadedData.rows.some(row=>String(row[header]??'').trim() && parseNumber(row[header])===null));
+      function findMentionedCategory(question, numericColumn='') {
+        const q = normalize(question);
+        const categorical = uploadedData.headers.filter(header => header !== numericColumn && uploadedData.rows.some(row => String(row[header] ?? '').trim() && parseNumber(row[header]) === null));
         for (const header of categorical) {
-          const h=normalize(header);
-          if (h && q.includes(h)) {
-            const value=uploadedData.rows.map(row=>String(row[header]??'').trim()).find(item=>item && q.includes(normalize(item)));
-            if (value) return {header,value};
+          const normalizedHeader = normalize(header);
+          if (!normalizedHeader || !q.includes(normalizedHeader)) continue;
+          const values = [...new Set(uploadedData.rows.map(row => String(row[header] ?? '').trim()).filter(Boolean))];
+          for (const value of values) {
+            const normalizedValue = normalize(value);
+            if (normalizedValue.length > 1 && q.includes(normalizedValue)) return { header, value };
           }
-        }
-        for (const header of categorical) {
-          const values=[...new Set(uploadedData.rows.map(row=>String(row[header]??'').trim()).filter(Boolean))];
-          for (const value of values) if (normalize(value).length>1 && q.includes(normalize(value))) return {header,value};
         }
         return null;
       }
+      function findGroupColumn(question, metricColumn='') {
+        const q = normalize(question);
+        if (!/\b(by|per|group|breakdown|compare|comparison)\b/.test(q)) return null;
+        const categorical = uploadedData.headers.filter(header => header !== metricColumn && uploadedData.rows.some(row => String(row[header] ?? '').trim() && parseNumber(row[header]) === null));
+        return categorical.map(header => ({header, score:q.includes(normalize(header)) ? normalize(header).length : 0})).filter(item => item.score > 0).sort((a,b) => b.score-a.score)[0]?.header || null;
+      }
       function rowLabel(row) {
-        const preferred=uploadedData.headers.find(header=>/location|branch|city|region|store|name|product/i.test(header));
-        if (preferred && String(row[preferred]??'').trim()) return String(row[preferred]).trim();
-        const other=uploadedData.headers.find(header=>parseNumber(row[header])===null && String(row[header]??'').trim());
+        const preferred = uploadedData.headers.find(header => /location|branch|city|region|store|name|product/i.test(header));
+        if (preferred && String(row[preferred] ?? '').trim()) return String(row[preferred]).trim();
+        const other = uploadedData.headers.find(header => parseNumber(row[header]) === null && String(row[header] ?? '').trim());
         return other ? String(row[other]).trim() : `row ${uploadedData.rows.indexOf(row)+2}`;
       }
+      function dataQuality() {
+        const rows = uploadedData.rows, headers = uploadedData.headers;
+        if (!rows.length) return 'The selected worksheet has no data rows to check.';
+        const blanks = headers.map(header => ({header, count:rows.filter(row => String(row[header] ?? '').trim() === '').length})).filter(item => item.count);
+        const duplicateRows = rows.length - new Set(rows.map(row => JSON.stringify(headers.map(header => row[header])))).size;
+        const numericIssues = headers.filter(header => rows.some(row => /amount|revenue|sales|expense|cost|price|profit|quantity|count|total/i.test(header) && String(row[header] ?? '').trim() && parseNumber(row[header]) === null));
+        return `Data quality for ${number.format(rows.length)} rows: ${blanks.length ? blanks.map(item => `${item.header}: ${number.format(item.count)} blank`).join('; ') : 'no blank cells detected'}; ${number.format(duplicateRows)} duplicate row(s)${numericIssues.length ? `; non-numeric values in likely metric column(s): ${numericIssues.join(', ')}` : ''}.`;
+      }
       function summarize(question) {
-        const headers=uploadedData.headers, rows=uploadedData.rows, q=normalize(question);
-        if (!rows.length) return 'The uploaded sheet has no data rows to analyze.';
+        const headers = uploadedData.headers, rows = uploadedData.rows, q = normalize(question);
+        if (!rows.length) return 'The selected worksheet has no data rows to analyze.';
         if (/\b(columns?|headers?|fields?)\b/.test(q)) return `The file contains ${headers.length} columns: ${headers.join(', ')}.`;
+        if (/\b(data quality|missing|blank cells|duplicate rows|validate)\b/.test(q)) return dataQuality();
+        if (/\b(unique|distinct|categories|options|list values)\b/.test(q)) {
+          const column = findColumn(question);
+          if (column) {
+            const values = [...new Set(rows.map(row => String(row[column] ?? '').trim()).filter(Boolean))];
+            return values.length ? `“${column}” has ${values.length} distinct values: ${values.slice(0,40).join(', ')}${values.length>40 ? `, and ${values.length-40} more` : ''}.` : `“${column}” has no non-empty values.`;
+          }
+        }
         if (/\b(how many|number of|count|row count|records?)\b/.test(q) && !findColumn(question,true)) return `There are ${number.format(rows.length)} non-empty data rows in “${uploadedData.fileName}”.`;
-        const column=findColumn(question,true);
+        const column = findColumn(question,true);
         if (!column) {
-          const anyColumn=findColumn(question);
-          if (anyColumn && /\b(unique|values|categories|options)\b/.test(q)) {
-            const values=[...new Set(rows.map(row=>String(row[anyColumn]??'').trim()).filter(Boolean))];
-            return values.length ? `“${anyColumn}” has ${values.length} distinct values: ${values.slice(0,30).join(', ')}${values.length>30?`, and ${values.length-30} more`:''}.` : `There are no non-empty values in “${anyColumn}”.`;
-          }
           if (/\b(summary|summarize|overview)\b/.test(q)) {
-            const totals=headers.filter(header=>getMetricValues(header).length).map(header=>`${header}: total ${formatValueFor(header,getMetricValues(header).reduce((sum,item)=>sum+item.value,0))}`);
-            return `“${uploadedData.fileName}” contains ${number.format(rows.length)} rows and ${headers.length} columns.${totals.length?` Numeric column totals: ${totals.join('; ')}.`:' No numeric columns were detected.'}`;
+            const totals = headers.filter(header => rows.some(row => parseNumber(row[header]) !== null)).map(header => {
+              const total = rows.reduce((sum,row) => sum + (parseNumber(row[header]) ?? 0),0); return `${header}: ${formatValue(header,total)}`;
+            });
+            return `“${uploadedData.fileName}” contains ${number.format(rows.length)} rows and ${headers.length} columns.${totals.length ? ` Numeric column totals: ${totals.join('; ')}.` : ' No numeric columns were detected.'}`;
           }
-          return `I couldn’t identify a numeric column in that question. Available columns: ${headers.join(', ')}. Try “total Revenue”, “average Expense”, or “highest Revenue by City”.`;
+          return `I couldn’t identify a numeric column. Available columns: ${headers.join(', ')}. Try “total Revenue”, “average Expense”, or “highest Revenue by City”.`;
         }
-        lastMetricColumn=column;
-        let values=getMetricValues(column);
-        const category=findCategory(question,column);
-        if (category) values=values.filter(item=>normalize(item.row[category.header])===normalize(category.value));
-        if (!values.length) return category ? `No numeric ${column} values found where ${category.header} is “${category.value}”.` : `I couldn’t find numeric values in “${column}”.`;
-        const scope=category?` where ${category.header} is “${category.value}”`:'';
-        const total=values.reduce((sum,item)=>sum+item.value,0), average=total/values.length;
-        const min=values.reduce((best,item)=>item.value<best.value?item:best,values[0]);
-        const max=values.reduce((best,item)=>item.value>best.value?item:best,values[0]);
-        if (/\b(average|mean|avg)\b/.test(q)) return `Average ${column}${scope} is ${formatValue(average)} across ${values.length} row(s).`;
+        lastMetricColumn = column;
+        let values = rows.map((row,index) => ({row,index,value:parseNumber(row[column])})).filter(item => item.value !== null);
+        const category = findMentionedCategory(question,column);
+        if (category) values = values.filter(item => normalize(item.row[category.header]) === normalize(category.value));
+        if (!values.length) return `I couldn’t find numeric values in “${column}”${category ? ` where ${category.header} is “${category.value}”` : ''}.`;
+        const scope = category ? ` where ${category.header} is “${category.value}”` : '';
+        const total = values.reduce((sum,item) => sum + item.value,0), average = total / values.length;
+        const sorted = values.map(item => item.value).sort((a,b) => a-b), mid = Math.floor(sorted.length/2);
+        const median = sorted.length % 2 ? sorted[mid] : (sorted[mid-1]+sorted[mid])/2;
+        const min = values.reduce((best,item) => item.value < best.value ? item : best,values[0]);
+        const max = values.reduce((best,item) => item.value > best.value ? item : best,values[0]);
+        const groupColumn = findGroupColumn(question,column);
+        if (groupColumn) {
+          const groups = new Map();
+          values.forEach(item => { const key = String(item.row[groupColumn] ?? '').trim() || '(blank)'; groups.set(key,(groups.get(key)||0)+item.value); });
+          const ranked = [...groups].sort((a,b) => b[1]-a[1]);
+          return `${/average|mean|avg/.test(q) ? 'Average' : 'Total'} ${column} by ${groupColumn}: ${ranked.slice(0,20).map(([name,value]) => `${name}: ${formatValue(column,/average|mean|avg/.test(q) ? value / values.filter(item => String(item.row[groupColumn] ?? '').trim() === name).length : value)}`).join('; ')}${ranked.length>20 ? `; and ${ranked.length-20} more` : ''}.`;
+        }
+        if (/\b(average|mean|avg)\b/.test(q)) return `Average ${column}${scope} is ${formatValue(column,average)} across ${values.length} row(s).`;
+        if (/\bmedian\b/.test(q)) return `Median ${column}${scope} is ${formatValue(column,median)} across ${values.length} row(s).`;
         if (/\b(top\s*\d+|\d+\s+top)\b/.test(q)) {
-          const match=q.match(/\btop\s*(\d+)|(\d+)\s+top\b/); const count=Math.min(20,Number(match[1]||match[2]||5));
-          const top=values.slice().sort((a,b)=>b.value-a.value).slice(0,count);
-          return `Top ${top.length} rows by ${column}${scope}: ${top.map(item=>`${rowLabel(item.row)} — ${formatValue(item.value)}`).join('; ')}.`;
+          const match = q.match(/\btop\s*(\d+)|(\d+)\s+top\b/); const count = Math.min(20,Math.max(1,Number(match[1]||match[2]||5)));
+          const top = values.slice().sort((a,b) => b.value-a.value).slice(0,count);
+          return `Top ${top.length} rows by ${column}${scope}: ${top.map(item => `${rowLabel(item.row)} — ${formatValue(column,item.value)}`).join('; ')}.`;
         }
-        if (/\b(highest|largest|maximum|max|most)\b/.test(q)) return `Highest ${column}${scope} is ${formatValue(max.value)} for ${rowLabel(max.row)}.`;
-        if (/\b(lowest|smallest|minimum|min|least)\b/.test(q)) return `Lowest ${column}${scope} is ${formatValue(min.value)} for ${rowLabel(min.row)}.`;
+        if (/\b(highest|largest|maximum|max|most)\b/.test(q)) return `Highest ${column}${scope} is ${formatValue(column,max.value)} for ${rowLabel(max.row)}.`;
+        if (/\b(lowest|smallest|minimum|min|least)\b/.test(q)) return `Lowest ${column}${scope} is ${formatValue(column,min.value)} for ${rowLabel(min.row)}.`;
         if (/\b(count|how many|number of)\b/.test(q)) return `There are ${values.length} numeric ${column} value(s)${scope}.`;
-        if (/\bmedian\b/.test(q)) { const sorted=values.map(item=>item.value).sort((a,b)=>a-b), mid=Math.floor(sorted.length/2); const median=sorted.length%2?sorted[mid]:(sorted[mid-1]+sorted[mid])/2; return `Median ${column}${scope} is ${formatValue(median)}.`; }
-        if (/\b(summary|summarize|total|sum|overall)\b/.test(q)) return `Total ${column}${scope} is ${formatValue(total)} across ${values.length} row(s).`;
-        return `For “${column}”${scope}: total ${formatValue(total)}, average ${formatValue(average)}, highest ${formatValue(max.value)} (${rowLabel(max.row)}), and lowest ${formatValue(min.value)} (${rowLabel(min.row)}).`;
+        if (/\b(summary|summarize|total|sum|overall)\b/.test(q)) return `Total ${column}${scope} is ${formatValue(column,total)} across ${values.length} row(s).`;
+        return `For “${column}”${scope}: total ${formatValue(column,total)}, average ${formatValue(column,average)}, median ${formatValue(column,median)}, highest ${formatValue(column,max.value)} (${rowLabel(max.row)}), and lowest ${formatValue(column,min.value)} (${rowLabel(min.row)}).`;
       }
-      function formatValueFor(header,value) { return /revenue|sales|income|expense|cost|amount|price|profit|ebitda|budget|salary/i.test(header) ? currency.format(value) : number.format(value); }
       function sendPrompt(prompt) {
-        const question=String(prompt||'').trim(); if(!question) return;
+        const question = String(prompt || '').trim(); if (!question) return;
         addMessage(question,'user');
-        const response=uploadedData.rows.length ? summarize(question) : 'Upload a CSV/XLS/XLSX spreadsheet first. I can then calculate answers from its data locally in this browser.';
-        window.setTimeout(()=>addMessage(response,'bot'),100);
+        const response = uploadedData.rows.length ? summarize(question) : 'Upload a CSV/XLS/XLSX spreadsheet first. I can then analyze it locally in this browser.';
+        window.setTimeout(() => addMessage(response,'bot'),100);
       }
-      fileInput.addEventListener('change',async event=>{
-        const file=event.target.files?.[0]; if(!file) return;
-        if(file.size>MAX_FILE_BYTES){ dataStatus.dataset.state='error'; dataStatus.textContent='File is larger than the 100 MB limit. Choose a smaller spreadsheet.'; fileInput.value=''; return; }
-        if(!/\.(csv|xls|xlsx)$/i.test(file.name)){ dataStatus.dataset.state='error'; dataStatus.textContent='Unsupported file. Please choose a CSV, XLS, or XLSX file.'; fileInput.value=''; return; }
-        if(typeof XLSX==='undefined'){ dataStatus.dataset.state='error'; dataStatus.textContent='Spreadsheet reader failed to load. Check your internet connection and refresh.'; fileInput.value=''; return; }
+      fileInput.addEventListener('change', async event => {
+        const file = event.target.files?.[0]; if (!file) return;
+        if (file.size > MAX_FILE_BYTES) { dataStatus.dataset.state='error'; dataStatus.textContent='File is larger than the 100 MB limit. Choose a smaller spreadsheet.'; fileInput.value=''; return; }
+        if (!/\.(csv|xls|xlsx)$/i.test(file.name)) { dataStatus.dataset.state='error'; dataStatus.textContent='Unsupported file. Please choose a CSV, XLS, or XLSX file.'; fileInput.value=''; return; }
+        if (typeof XLSX === 'undefined') { dataStatus.dataset.state='error'; dataStatus.textContent='Spreadsheet reader failed to load. Check your internet connection and refresh.'; fileInput.value=''; return; }
         dataStatus.dataset.state='loading'; dataStatus.textContent=`Reading ${file.name} in this browser…`;
         try {
-          const workbook=XLSX.read(await file.arrayBuffer(),{type:'array',raw:false,cellDates:true});
-          const sheetName=workbook.SheetNames[0]; if(!sheetName||!workbook.Sheets[sheetName]) throw new Error('No readable worksheet found.');
-          const matrix=XLSX.utils.sheet_to_json(workbook.Sheets[sheetName],{header:1,defval:'',blankrows:false,raw:false}); if(!matrix.length) throw new Error('The first worksheet is empty.');
-          const headers=escapeHeaderRow(matrix[0]);
-          const rows=matrix.slice(1).map(cells=>{const row={};headers.forEach((header,index)=>{row[header]=cells[index]??'';});return row;}).filter(row=>Object.values(row).some(value=>String(value).trim()!==''));
-          uploadedData={fileName:file.name,headers,rows}; dataStatus.dataset.state='ready';
-          dataStatus.textContent=`${file.name} ready · ${number.format(rows.length)} rows · ${headers.length} columns. Ask a question about the uploaded data.`;
-          addMessage(`I’ve loaded “${file.name}” locally. It contains ${number.format(rows.length)} rows and ${headers.length} columns. Ask for column totals, averages, highest/lowest values, row counts, or category-specific values.`,'bot');
-        } catch(error){ uploadedData={fileName:'',headers:[],rows:[]}; dataStatus.dataset.state='error'; dataStatus.textContent=error.message||'Could not read the file. Please upload a valid spreadsheet.'; }
-        finally { fileInput.value=''; }
+          workbook = XLSX.read(await file.arrayBuffer(),{type:'array',raw:false,cellDates:true});
+          if (!workbook.SheetNames.length) throw new Error('No readable worksheet found.');
+          uploadedData = {fileName:file.name,headers:[],rows:[]};
+          sheetSelect.replaceChildren();
+          workbook.SheetNames.forEach(name => { const option=document.createElement('option'); option.value=name; option.textContent=name; sheetSelect.appendChild(option); });
+          sheetToolbar.hidden = workbook.SheetNames.length < 2;
+          loadSheet(workbook.SheetNames[0]);
+        } catch(error) {
+          workbook = null; uploadedData={fileName:'',headers:[],rows:[]}; dataStatus.dataset.state='error'; dataStatus.textContent=error.message||'Could not read the file. Please upload a valid spreadsheet.';
+        } finally { fileInput.value=''; }
       });
-      chatForm.addEventListener('submit',event=>{event.preventDefault();const question=chatInput.value.trim();if(!question)return;chatInput.value='';sendPrompt(question);chatInput.focus();});
-      quickButtons.forEach(button=>button.addEventListener('click',()=>sendPrompt(button.dataset.prompt)));
+      sheetSelect.addEventListener('change',() => {
+        try { loadSheet(sheetSelect.value); }
+        catch(error) { dataStatus.dataset.state='error'; dataStatus.textContent=error.message; }
+      });
+      chatForm.addEventListener('submit',event => { event.preventDefault(); const question=chatInput.value.trim(); if(!question)return; chatInput.value=''; sendPrompt(question); chatInput.focus(); });
+      document.querySelectorAll('.quick-btn').forEach(button => button.addEventListener('click',() => sendPrompt(button.dataset.prompt)));
+      document.getElementById('clearChatBtn').addEventListener('click',() => {
+        chatMessages.replaceChildren();
+        addMessage(uploadedData.rows.length ? `Chat cleared. “${uploadedData.fileName}” is still loaded; ask a new question whenever you’re ready.` : 'Chat cleared. Upload a spreadsheet to get started.');
+        chatInput.focus();
+      });
     </script>
   </body>
 </html>
