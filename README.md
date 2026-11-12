@@ -1,3 +1,12 @@
+## Contributors
+
+This project welcomes collaborative development.
+
+### Contribution
+- Documentation improvements
+- Feature development
+- Bug fixes
+
 ## Getting Started
 
 1. Clone the repository.
